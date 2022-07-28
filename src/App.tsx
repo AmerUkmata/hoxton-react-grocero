@@ -1,53 +1,77 @@
-import { useState } from 'react'
-import './App.css'
+import { useState, useEffect } from "react";
+import { Product, Products, initProducts } from "./data/data";
+import "./App.css";
+import Header from "./components/Header";
+import Cart from "./components/Cart";
 
 function App() {
-  const [count, setCount] = useState(0)
-   
+  const [products, setProducts] = useState(initProducts);
+  const [productsOnCart, setCartProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  function productExistsOnCart(product: Product) {
+    for (let prod of productsOnCart) {
+      if (product.id === prod.id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function addToCartFromStore(product: Product) {
+    let productsOnCartCopy = structuredClone(productsOnCart);
+    if (productExistsOnCart(product)) {
+      for (let prod of productsOnCartCopy) {
+        if (prod.id === product.id) {
+          prod.quantityOnCart++;
+          setTotal(total + prod.price);
+        }
+      }
+      setCartProducts(productsOnCartCopy);
+      return;
+    } else {
+      let prod = structuredClone(product);
+      prod.quantityOnCart++;
+      productsOnCartCopy.push(prod);
+      setCartProducts(productsOnCartCopy);
+      setTotal(total + prod.price);
+      return;
+    }
+  }
+
+  function addProduct(product: Product) {
+    let productsOnCartCopy = structuredClone(productsOnCart);
+    for (let prod of productsOnCartCopy) {
+      if (prod.id === product.id) {
+        prod.quantityOnCart++;
+        setTotal(total + prod.price);
+      }
+    }
+    setCartProducts(productsOnCartCopy);
+  }
+  function removeProduct(product: Product) {
+    let productsOnCartCopy = structuredClone(productsOnCart);
+    for (let prod of productsOnCartCopy) {
+      if (prod.id === product.id) {
+        prod.quantityOnCart--;
+        setTotal(total - prod.price);
+      }
+    }
+    setCartProducts(productsOnCartCopy);
+  }
+
   return (
-    <div><header id="store">
-      <h1>Grocero</h1>
-      <ul className="item-list store--item-list">
-        <li>
-          <div className="store--item-icon">
-            <img src="assets/icons/001-beetroot.svg" alt="beetroot" />
-          </div>
-          <button>Add to cart</button>
-        </li>
-      </ul>
-    </header>
-
-      <main id="cart">
-        <h2>Your Cart</h2>
-
-        <div className="cart--item-list-container">
-          <ul className="item-list cart--item-list">
-            <li>
-              <img
-                className="cart--item-icon"
-                src="assets/icons/001-beetroot.svg"
-                alt="beetroot"
-              />
-              <p>beetroot</p>
-              <button className="quantity-btn remove-btn center">-</button>
-              <span className="quantity-text center">1</span>
-              <button className="quantity-btn add-btn center">+</button>
-            </li>
-          </ul>
-        </div>
-
-        <div className="total-section">
-          <div>
-            <h3>Total</h3>
-          </div>
-
-          <div>
-            <span className="total-number">£0.00</span>
-          </div>
-        </div>
-      </main>
+    <div className="App">
+      <Header products={products} addToCartFromStore={addToCartFromStore} />
+      <Cart
+        productsOnCart={productsOnCart}
+        setCartProducts={setCartProducts}
+        addProduct={addProduct}
+        removeProduct={removeProduct}
+        total={total}
+      />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
